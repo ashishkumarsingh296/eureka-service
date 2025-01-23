@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS = credentials('DOCKER_CREDENS') // Replace with your credentials ID
+       // DOCKER_CREDENTIALS = credentials('DOCKER_CREDENS') // Replace with your credentials ID
     }
 
     stages {
