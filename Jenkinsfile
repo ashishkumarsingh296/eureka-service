@@ -2,6 +2,9 @@ pipeline {
     agent any
 
     environment {
+
+        GIT_USERNAME = 'ashishkumarsingh296@gmail.com'
+        GIT_PASSWORD = 'Indra@198955'  // OR 'your-password' for HTTPS
        // DOCKER_CREDENTIALS = credentials('DOCKER_CREDENS') // Replace with your credentials ID
     }
 
