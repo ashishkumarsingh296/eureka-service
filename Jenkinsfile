@@ -101,12 +101,44 @@ pipeline {
       }
     }
 
-    // Step 4: Stop Running Docker Container (if exists)
+    // // Step 4: Stop Running Docker Container (if exists)
+    // stage('Stop Docker Container') {
+    //   steps {
+    //     script {
+    //       // Stop the container if it is already running
+    //       bat "docker stop ${CONTAINER_NAME} || true"
+    //     }
+    //   }
+    // }
+
+    // // Step 5: Remove Docker Container (if exists)
+    // stage('Remove Docker Container') {
+    //   steps {
+    //     script {
+    //       // Remove the container if it exists
+    //       bat "docker rm ${CONTAINER_NAME} || true"
+    //     }
+    //   }
+    // }
+
+    // // Step 6: Remove Docker Image (if exists)
+    // stage('Remove Docker Image') {
+    //   steps {
+    //     script {
+    //       // Remove the Docker image if it exists (if not already removed)
+    //       bat "docker rmi ${IMAGE_NAME}:${VERSION} || true"
+    //     }
+    //   }
+    // }
+
+
+
+     // Step 4: Stop Running Docker Container (if exists)
     stage('Stop Docker Container') {
       steps {
         script {
-          // Stop the container if it is already running
-          bat "docker stop ${CONTAINER_NAME} || true"
+          // Stop the container if it is already running (Windows)
+          bat "docker stop ${CONTAINER_NAME} || exit /b 0"
         }
       }
     }
@@ -115,8 +147,8 @@ pipeline {
     stage('Remove Docker Container') {
       steps {
         script {
-          // Remove the container if it exists
-          bat "docker rm ${CONTAINER_NAME} || true"
+          // Remove the container if it exists (Windows)
+          bat "docker rm ${CONTAINER_NAME} || exit /b 0"
         }
       }
     }
@@ -126,7 +158,7 @@ pipeline {
       steps {
         script {
           // Remove the Docker image if it exists (if not already removed)
-          bat "docker rmi ${IMAGE_NAME}:${VERSION} || true"
+          bat "docker rmi ${IMAGE_NAME}:${VERSION} || exit /b 0"
         }
       }
     }
