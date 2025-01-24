@@ -59,17 +59,15 @@
 
 
 
-
 pipeline {
   agent any
 
   environment {
     DOCKER_CREDENTIAL = credentials('DOCKER-CREDENTIAL')
     VERSION = "${env.BUILD_ID}"
-    // SONARQUBE_TOKEN = 'squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5'
-    // SONARQUBE_URL = 'http://35.180.137.8:9000/'
-    // SONARQUBE_PROJECT_KEY = 'com.ashish.eureka-service'
-    // SONARQUBE_LOGIN = 'squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5'
+    IMAGE_NAME = 'ashishdevops1989/eureka-service'
+    CONTAINER_NAME = 'eureka-service-container'
+    PORT = '8761'
   }
 
   tools {
@@ -81,7 +79,6 @@ pipeline {
     // Step 1: Checkout Latest Code
     stage('Checkout Code') {
       steps {
-        // Checkout the latest code from GitHub repository
         git url: 'https://github.com/ashishkumarsingh296/eureka-service.git', credentialsId: 'GITHUB-CREDS'
       }
     }
@@ -90,7 +87,6 @@ pipeline {
     stage('Maven Build') {
       steps {
         script {
-          // For Windows, use 'bat', for Linux/macOS, use 'sh' command.
           bat 'mvn clean package -DskipTests'
         }
       }
@@ -105,72 +101,73 @@ pipeline {
       }
     }
 
-    // Step 4: SonarQube Analysis (Commented out if you want to enable it later)
-    /*
-    // stage('SonarQube Analysis') {
-    //   steps {
-    //     sh """
-    //       mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar \
-    //         -Dsonar.host.url=${SONARQUBE_URL} \
-    //         -Dsonar.login=${SONARQUBE_LOGIN}
-    //     """
-    //   }
-    // }
-    */
-
-    // Step 5: Check Code Coverage in SonarQube (Commented out if you want to enable it later)
-    /*
-    // stage('Check Code Coverage') {
-    //   steps {
-    //     script {
-    //       def coverageThreshold = 80.0
-
-    //       def response = sh(
-    //         script: "curl -H 'Authorization: Bearer ${SONARQUBE_TOKEN}' '${SONARQUBE_URL}/api/measures/component?component=${SONARQUBE_PROJECT_KEY}&metricKeys=coverage'",
-    //         returnStdout: true
-    //       ).trim()
-
-    //       def coverage = sh(
-    //         script: "echo '${response}' | jq -r '.component.measures[0].value'",
-    //         returnStdout: true
-    //       ).trim().toDouble()
-
-    //       echo "Coverage: ${coverage}"
-
-    //       if (coverage < coverageThreshold) {
-    //         error "Coverage is below the threshold of ${coverageThreshold}%. Aborting the pipeline."
-    //       }
-    //     }
-    //   }
-    // }
-    */
-
-    // Step 6: Build Docker Image
-    stage('Build Docker Image') {
+    // Step 4: Stop Running Docker Container (if exists)
+    stage('Stop Docker Container') {
       steps {
         script {
-          docker.build('ashishdevops1989/eureka-service:0.0.1')
+          // Stop the container if it is already running
+          bat "docker stop ${CONTAINER_NAME} || true"
         }
       }
     }
 
-    // Step 7: Push Docker Image
+    // Step 5: Remove Docker Container (if exists)
+    stage('Remove Docker Container') {
+      steps {
+        script {
+          // Remove the container if it exists
+          bat "docker rm ${CONTAINER_NAME} || true"
+        }
+      }
+    }
+
+    // Step 6: Remove Docker Image (if exists)
+    stage('Remove Docker Image') {
+      steps {
+        script {
+          // Remove the Docker image if it exists (if not already removed)
+          bat "docker rmi ${IMAGE_NAME}:${VERSION} || true"
+        }
+      }
+    }
+
+    // Step 7: Build Docker Image
+    stage('Build Docker Image') {
+      steps {
+        script {
+          docker.build("${IMAGE_NAME}:${VERSION}")
+        }
+      }
+    }
+
+    // Step 8: Push Docker Image
     stage('Push Docker Image') {
       steps {
         script {
-          docker.withRegistry('https://index.docker.io/v1/', 'DOCKER-CREDENTIAL') {
-            docker.image('ashishdevops1989/eureka-service:0.0.1').push()
+          docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_CREDENTIAL') {
+            docker.image("${IMAGE_NAME}:${VERSION}").push()
           }
         }
       }
     }
 
-    // Step 8: Cleanup Workspace
+    // Step 9: Run Docker Container
+    stage('Run Docker Container') {
+      steps {
+        script {
+          // Run the container with port mapping (8761)
+          sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE_NAME}:${VERSION}"
+        }
+      }
+    }
+
+    // Step 10: Cleanup Workspace
     stage('Cleanup Workspace') {
       steps {
-        deleteDir() // Clean up the workspace after the build
+        deleteDir()
       }
     }
 
   }
 }
+
