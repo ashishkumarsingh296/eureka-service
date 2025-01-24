@@ -2,25 +2,20 @@ pipeline {
     agent any
 
     environment {
-
-        // GIT_USERNAME = 'ashishkumarsingh296@gmail.com'
-        // GIT_PASSWORD = 'Indra@198955'  // OR 'your-password' for HTTPS
-        DOCKER_CREDENTIALS = credentials('DOCKER_CREDENS') // Replace with your credentials ID
+        DOCKER_CREDENTIALS = credentials('DOCKER_CREDENS') // Replace with the actual credentials ID
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-            git url: 'https://github.com/ashishkumarsingh296/eureka-service.git', credentialsId: 'GITHUB-CREDS'
-
+                git url: 'https://github.com/ashishkumarsingh296/eureka-service.git', credentialsId: 'GITHUB-CREDS'
             }
         }
 
         stage('Build with Maven') {
             steps {
                 script {
-                    // Windows: Run Maven using bat (batch)
-                    bat 'mvn clean install'
+                    bat 'mvn clean install' // Or './mvnw clean install' for Linux
                 }
             }
         }
