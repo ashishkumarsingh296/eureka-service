@@ -63,7 +63,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_CREDENTIAL = credentials('DOCKER-CREDENTIAL')
+    credentials('DOCKER-CREDENTIAL')
     VERSION = "${env.BUILD_ID}"
     IMAGE_NAME = 'ashishdevops1989/eureka-service'
     CONTAINER_NAME = 'eureka-service-container'
@@ -176,7 +176,7 @@ pipeline {
     stage('Push Docker Image') {
       steps {
         script {
-          docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_CREDENTIAL') {
+          docker.withRegistry('https://index.docker.io/v1/', 'DOCKER-CREDENTIAL') {
             docker.image("${IMAGE_NAME}:${VERSION}").push()
           }
         }
