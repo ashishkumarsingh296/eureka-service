@@ -160,13 +160,6 @@ pipeline {
         }
       }
     }
-
-    // Step 10: Cleanup Workspace
-    stage('Cleanup Workspace') {
-      steps {
-        deleteDir()
-      }
-    }
   }
 
   post {
