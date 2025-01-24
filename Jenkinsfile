@@ -11,8 +11,8 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                // Manually checkout the code from the Git repository
-                git 'https://your-repository-url.git'  // Replace with your Git repository URL
+            git url: 'https://github.com/ashishkumarsingh296/eureka-service.git', credentialsId: 'GITHUB-CREDS'
+
             }
         }
 
