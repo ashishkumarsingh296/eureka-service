@@ -85,18 +85,22 @@ pipeline {
     stage('Maven Build') {
         steps {
             script {
-                     bat 'mvn clean install'
-                }
-          // sh 'mvn clean package -DskipTests'
+                     // bat 'mvn clean install'
+                
+          bat 'mvn clean package -DskipTests'
+         }
     }
   }
 
     // Step 3: Run Unit Tests
-    // stage('Run Tests') {
-    //   steps {
-    //     sh 'mvn test'
-    //   }
-    // }
+    stage('Run Tests') {
+      steps {
+        script{
+           bat 'mvn test'
+        }
+       
+      }
+    }
 
     // Step 4: SonarQube Analysis
     // stage('SonarQube Analysis') {
@@ -137,12 +141,14 @@ pipeline {
     // Step 6: Docker Build and Push
     stage('Docker Build and Push') {
       steps {
-        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-        sh 'docker build -t ashishdevops1989/eureka-service:${VERSION} .'
-        sh 'docker push ashishdevops1989/eureka-service:${VERSION}'
+        script {
+//                     // Secure Docker login using --password-stdin                   
+          bat 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+        bat 'docker build -t ashishdevops1989/eureka-service:${VERSION} .'
+        bat 'docker push ashishdevops1989/eureka-service:${VERSION}'
       }
     }
-
+   }
     // Step 7: Cleanup Workspace
     stage('Cleanup Workspace') {
       steps {
