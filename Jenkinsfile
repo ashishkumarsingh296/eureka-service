@@ -55,6 +55,11 @@
 //     }
 // }
 
+
+
+
+
+
 pipeline {
   agent any
 
@@ -83,26 +88,25 @@ pipeline {
 
     // Step 2: Maven Build
     stage('Maven Build') {
-        steps {
-            script {
-                     // bat 'mvn clean install'
-                
+      steps {
+        script {
+          // For Windows, use 'bat', for Linux/macOS, use 'sh' command.
           bat 'mvn clean package -DskipTests'
-         }
+        }
+      }
     }
-  }
 
     // Step 3: Run Unit Tests
     stage('Run Tests') {
       steps {
-        script{
-           bat 'mvn test'
+        script {
+          bat 'mvn test'
         }
-       
       }
     }
 
-    // Step 4: SonarQube Analysis
+    // Step 4: SonarQube Analysis (Commented out if you want to enable it later)
+    /*
     // stage('SonarQube Analysis') {
     //   steps {
     //     sh """
@@ -112,8 +116,10 @@ pipeline {
     //     """
     //   }
     // }
+    */
 
-    // Step 5: Check Code Coverage in SonarQube
+    // Step 5: Check Code Coverage in SonarQube (Commented out if you want to enable it later)
+    /*
     // stage('Check Code Coverage') {
     //   steps {
     //     script {
@@ -137,45 +143,34 @@ pipeline {
     //     }
     //   }
     // }
+    */
 
-
- // Step 6: Docker Build
-
-            stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build('ashishdevops1989/eureka-service:0.0.1')
-                }
-            }
+    // Step 6: Build Docker Image
+    stage('Build Docker Image') {
+      steps {
+        script {
+          docker.build('ashishdevops1989/eureka-service:0.0.1')
         }
-Step 7: Docker Push
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'DOCKER-CREDENTIAL') {
-                        docker.image('ashishdevops1989/eureka-service:0.0.1').push()
-                    }
-                }
-            }
+      }
+    }
 
-//     // Step 7: Docker Push
-//     stage('Docker Build and Push') {
-//       steps {
-//         script {
-// //                     // Secure Docker login using --password-stdin                   
-//           bat 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-//         bat 'docker build -t ashishdevops1989/eureka-service:${VERSION} .'
-//         bat 'docker push ashishdevops1989/eureka-service:${VERSION}'
-//       }
-//     }
-//    }
+    // Step 7: Push Docker Image
+    stage('Push Docker Image') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'DOCKER-CREDENTIAL') {
+            docker.image('ashishdevops1989/eureka-service:0.0.1').push()
+          }
+        }
+      }
+    }
+
     // Step 8: Cleanup Workspace
     stage('Cleanup Workspace') {
       steps {
-        deleteDir()
+        deleteDir() // Clean up the workspace after the build
       }
     }
 
   }
-
 }
