@@ -56,97 +56,97 @@
 // }
 
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        DOCKER_IMAGE_NAME = 'ashishdevops1989/eureka-service'
-        DOCKER_TAG = "0.0.${BUILD_NUMBER}"  // Use Jenkins build number for versioning
+  environment {
+    DOCKERHUB_CREDENTIALS = credentials('DOCKER-CREDENTIAL')
+    VERSION = "${env.BUILD_ID}"
+    // SONARQUBE_TOKEN = 'squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5'
+    // SONARQUBE_URL = 'http://35.180.137.8:9000/'
+    // SONARQUBE_PROJECT_KEY = 'com.ashish.eureka-service'
+    // SONARQUBE_LOGIN = 'squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5'
+  }
+
+  tools {
+    maven "Maven"
+  }
+
+  stages {
+
+    // Step 1: Checkout Latest Code
+    stage('Checkout Code') {
+      steps {
+        // Checkout the latest code from GitHub repository
+        git url: 'https://github.com/ashishkumarsingh296/eureka-service.git', credentialsId: 'GITHUB-CREDS'
+      }
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git url: 'https://github.com/ashishkumarsingh296/eureka-service.git', credentialsId: 'GITHUB-CREDS'
-            }
-        }
-
-        stage('Build with Maven') {
-            steps {
-                script {
-                    // Compile, test, and generate coverage report
-                    bat 'mvn clean install'
-                }
-            }
-        }
-
-        // stage('Run Unit Tests and Code Coverage') {
-        //     steps {
-        //         script {
-        //             // Run Maven to execute tests and code coverage (if using JaCoCo or another tool)
-        //             bat 'mvn test'
-        //             bat 'mvn jacoco:report'  // Assuming JaCoCo for code coverage
-        //         }
-        //     }
-        // }
-
-        stage('Login to Docker') {
-            steps {
-                script {
-                    // Login to Docker using Jenkins credentials
-                    docker.withRegistry('https://index.docker.io/v1/', 'DOCKER-CREDENTIAL') {
-                        echo "Successfully logged in to Docker Hub"
-                    }
-                }
-            }
-        }
-
-        stage('Stop and Remove Existing Containers') {
-            steps {
-                script {
-                    // Stop and remove any existing containers with the same name
-                    sh 'docker ps -q -f "name=eureka-service" | xargs -r docker stop'
-                    sh 'docker ps -a -q -f "name=eureka-service" | xargs -r docker rm'
-                }
-            }
-        }
-
-        stage('Remove Existing Docker Image') {
-            steps {
-                script {
-                    // Remove the existing Docker image if it exists
-                    sh "docker images -q ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} | xargs -r docker rmi"
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build the Docker image with the latest tag
-                    docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}")
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Push the newly built Docker image to Docker Hub
-                    docker.withRegistry('https://index.docker.io/v1/', 'DOCKER-CREDENTIAL') {
-                        docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}").push()
-                    }
-                }
-            }
-        }
-
-        stage('Run Docker Container') {
-            steps {
-                script {
-                    // Run the Docker container, mapping port 8761
-                    // This will expose port 8761 on the host machine
-                    sh "docker run -d -p 8761:8761 --name eureka-service ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
-                }
-            }
+    // Step 2: Maven Build
+    stage('Maven Build') {
+        steps {
+          sh 'mvn clean package -DskipTests'
         }
     }
+
+    // Step 3: Run Unit Tests
+    stage('Run Tests') {
+      steps {
+        sh 'mvn test'
+      }
+    }
+
+    // Step 4: SonarQube Analysis
+    // stage('SonarQube Analysis') {
+    //   steps {
+    //     sh """
+    //       mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar \
+    //         -Dsonar.host.url=${SONARQUBE_URL} \
+    //         -Dsonar.login=${SONARQUBE_LOGIN}
+    //     """
+    //   }
+    // }
+
+    // Step 5: Check Code Coverage in SonarQube
+    // stage('Check Code Coverage') {
+    //   steps {
+    //     script {
+    //       def coverageThreshold = 80.0
+
+    //       def response = sh(
+    //         script: "curl -H 'Authorization: Bearer ${SONARQUBE_TOKEN}' '${SONARQUBE_URL}/api/measures/component?component=${SONARQUBE_PROJECT_KEY}&metricKeys=coverage'",
+    //         returnStdout: true
+    //       ).trim()
+
+    //       def coverage = sh(
+    //         script: "echo '${response}' | jq -r '.component.measures[0].value'",
+    //         returnStdout: true
+    //       ).trim().toDouble()
+
+    //       echo "Coverage: ${coverage}"
+
+    //       if (coverage < coverageThreshold) {
+    //         error "Coverage is below the threshold of ${coverageThreshold}%. Aborting the pipeline."
+    //       }
+    //     }
+    //   }
+    // }
+
+    // Step 6: Docker Build and Push
+    stage('Docker Build and Push') {
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+        sh 'docker build -t ashishdevops1989/eureka-service:${VERSION} .'
+        sh 'docker push ashishdevops1989/eureka-service:${VERSION}'
+      }
+    }
+
+    // Step 7: Cleanup Workspace
+    stage('Cleanup Workspace') {
+      steps {
+        deleteDir()
+      }
+    }
+
+  }
+
 }
