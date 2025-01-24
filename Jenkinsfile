@@ -63,7 +63,7 @@ pipeline {
   agent any
 
   environment {
-    credentials('DOCKER-CREDENTIAL')
+    DOCKER-CREDENTIAL= credentials('DOCKER-CREDENTIAL')
     VERSION = "${env.BUILD_ID}"
     IMAGE_NAME = 'ashishdevops1989/eureka-service'
     CONTAINER_NAME = 'eureka-service-container'
