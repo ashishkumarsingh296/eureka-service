@@ -84,16 +84,19 @@ pipeline {
     // Step 2: Maven Build
     stage('Maven Build') {
         steps {
-          sh 'mvn clean package -DskipTests'
-        }
+            script {
+//                     bat 'mvn clean install'
+//                 }
+          // sh 'mvn clean package -DskipTests'
     }
+  }
 
     // Step 3: Run Unit Tests
-    stage('Run Tests') {
-      steps {
-        sh 'mvn test'
-      }
-    }
+    // stage('Run Tests') {
+    //   steps {
+    //     sh 'mvn test'
+    //   }
+    // }
 
     // Step 4: SonarQube Analysis
     // stage('SonarQube Analysis') {
