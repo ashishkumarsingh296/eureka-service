@@ -188,7 +188,7 @@ pipeline {
       steps {
         script {
           // Run the container with port mapping (8761)
-          sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE_NAME}:${VERSION}"
+          bat "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE_NAME}:${VERSION}"
         }
       }
     }
