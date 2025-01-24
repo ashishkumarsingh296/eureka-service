@@ -64,7 +64,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKER-CREDENTIAL = credentials('DOCKER-CREDENTIAL')
+    DOCKER_CREDENTIAL = credentials('DOCKER-CREDENTIAL')
     VERSION = "${env.BUILD_ID}"
     // SONARQUBE_TOKEN = 'squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5'
     // SONARQUBE_URL = 'http://35.180.137.8:9000/'
