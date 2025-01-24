@@ -63,7 +63,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_CREDENTIAL= credentials('DOCKER-CREDENTIAL')
+    DOCKER_CREDENTIAL = credentials('DOCKER-CREDENTIAL')
     VERSION = "${env.BUILD_ID}"
     IMAGE_NAME = 'ashishdevops1989/eureka-service'
     CONTAINER_NAME = 'eureka-service-container'
@@ -101,39 +101,7 @@ pipeline {
       }
     }
 
-    // // Step 4: Stop Running Docker Container (if exists)
-    // stage('Stop Docker Container') {
-    //   steps {
-    //     script {
-    //       // Stop the container if it is already running
-    //       bat "docker stop ${CONTAINER_NAME} || true"
-    //     }
-    //   }
-    // }
-
-    // // Step 5: Remove Docker Container (if exists)
-    // stage('Remove Docker Container') {
-    //   steps {
-    //     script {
-    //       // Remove the container if it exists
-    //       bat "docker rm ${CONTAINER_NAME} || true"
-    //     }
-    //   }
-    // }
-
-    // // Step 6: Remove Docker Image (if exists)
-    // stage('Remove Docker Image') {
-    //   steps {
-    //     script {
-    //       // Remove the Docker image if it exists (if not already removed)
-    //       bat "docker rmi ${IMAGE_NAME}:${VERSION} || true"
-    //     }
-    //   }
-    // }
-
-
-
-     // Step 4: Stop Running Docker Container (if exists)
+    // Step 4: Stop Running Docker Container (if exists)
     stage('Stop Docker Container') {
       steps {
         script {
@@ -199,7 +167,35 @@ pipeline {
         deleteDir()
       }
     }
+  }
 
+  post {
+    // After the pipeline completes
+    always {
+      // Always run the following steps, no matter what
+      echo 'Cleaning up workspace...'
+      deleteDir()  // Clean up workspace
+    }
+
+    success {
+      // Runs only if the pipeline was successful
+      echo 'Pipeline was successful. Image has been built and pushed to Docker Hub.'
+    }
+
+    failure {
+      // Runs only if the pipeline failed
+      echo 'Pipeline failed. Please check the logs for errors.'
+      // You can add additional steps here to notify via email or Slack if needed
+    }
+
+    unstable {
+      // Runs if the pipeline is unstable (e.g., tests failed)
+      echo 'Pipeline is unstable. Some tests might have failed.'
+    }
+
+    aborted {
+      // Runs if the pipeline was manually aborted
+      echo 'Pipeline was aborted by the user.'
+    }
   }
 }
-
